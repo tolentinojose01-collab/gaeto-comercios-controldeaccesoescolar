@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Seguridad y Acceso Escolar Profesional</title>
+    <style>
+        /* CONFIGURACIÓN BASE BLINDADA PARA CELULAR - NO OPTIMIZAR NI CAMBIAR ESTRUCTURA */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .contenedor-movil {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .area-logo {
+            text-align: center;
+            margin-bottom: 15px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .area-logo img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .menu-principal {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-menu {
+            flex: 1;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #343a40;
+            color: #ffffff;
+        }
+
+        .btn-menu.activo {
+            background-color: #007bff;
+        }
+
+        .seccion-modulo {
+            display: none;
+        }
+
+        .seccion-modulo.activa {
+            display: block;
+        }
+
+        /* Visor de Cámara de Alta Definición */
+        .visor-camara {
+            width: 100%;
+            height: 220px;
+            background-color: #111111;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            font-size: 13px;
+            overflow: hidden;
+            border: 2px solid #d1d5db;
+            position: relative;
+        }
+
+        .visor-camara video, .visor-camara img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Letrero indicador sobre la cámara */
+        .indicador-camara {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(220, 53, 69, 0.85);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .indicador-camara.fijo {
+            background-color: rgba(40, 167, 69, 0.9);
+        }
+
+        .contenedor-foto-verificacion {
+            width: 100%;
+            height: 180px;
+            background-color: #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #9ca3af;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .contenedor-foto-verificacion img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Botonera Naranja de Fotografía */
+        .grupo-botones-foto {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-capturar {
+            flex: 2;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-repetir {
+            flex: 1;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Formularios */
+        .bloque-blanco {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 15px;
+        }
+
+        .titulo-bloque {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .grupo-campo {
+            margin-bottom: 12px;
+        }
+
+        .grupo-campo label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .grupo-campo input, .grupo-campo select {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+
+        .linea-doble {
+            display: flex;
+            gap: 10px;
+        }
+        .linea-doble .campo-izq { flex: 2; }
+        .linea-doble .campo-der { flex: 1; }
+
+        .alerta-sms {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #eff6ff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 15px;
+        }
+
+        .alerta-sms input { width: 18px; height: 18px; margin: 0; }
+        .alerta-sms label { font-size: 12px; font-weight: bold; color: #1e40af; }
+
+        .fila-botones {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-guardar {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 2;
+        }
+
+        .btn-limpiar {
+            background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-operacion {
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .tabla-historial {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .tabla-historial th, .tabla-historial td {
+            border: 1px solid #e5e7eb;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .tabla-historial th { background-color: #f3f4f6; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-movil">
+        
+        <div class="area-logo">
+            <img src="https://via.placeholder.com/200x50?text=GAETO+SISTEMAS" alt="Logotipo">
+        </div>
+
+        <div class="menu-principal">
+            <button class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA (Control)</button>
+            <button class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA (Padres/Alumnos)</button>
+        </div>
+
+        <div class="visor-camara" id="contenedor-visor">
+            <div class="indicador-camara" id="tag-camara">En Vivo</div>
+            <video id="video-dispositivo" autoplay playsinline muted></video>
+            <img id="imagen-congelada" style="display:none;" alt="Foto Fija">
+            <canvas id="canvas-foto" style="display:none;"></canvas>
+        </div>
+
+
+        <div id="modulo-operacion" class="seccion-modulo activa">
+            
+            <label style="font-size: 12px; font-weight: bold; color: #374151; display:block; margin-bottom:4px;">Foto de Identidad Registrada:</label>
+            <div class="contenedor-foto-verificacion" id="foto-verificacion-persona">
+                <span style="color:#6b7280; font-size:12px; padding:10px; text-align:center;">Seleccione una persona para validar su rostro y parentesco</span>
+            </div>
+
+            <div class="bloque-blanco">
+                <div class="titulo-bloque">REGISTRO DE ENTRADA Y SALIDA</div>
+                
+                <div class="grupo-campo">
+                    <label>Seleccionar Alumno Registrado:</label>
+                    <select id="opciones-alumnos" onchange="cargarDatosAlumnoSeleccionado()">
+                        <option value="">-- Seleccione Alumno --</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo">
+                    <label>¿Quién se presenta en puerta?</label>
+                    <select id="op-quien-recoge" onchange="mostrarFotoPersonaSeleccionada()">
+                        <option value="">-- Seleccione Persona --</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo">
+                    <label>Teléfono del Tutor (Para Alertas):</label>
+                    <input type="text" id="op-celular-tutor" readonly placeholder="Automático">
+                </div>
+
+                <div class="grupo-campo">
+                    <label>Tipo de Movimiento:</label>
+                    <select id="op-movimiento">
+                        <option value="ENTRADA">ENTRADA (Acceso Escolar)</option>
+                        <option value="SALIDA">SALIDA (Retiro del Alumno)</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo">
+                    <label>Fecha y Hora Oficial:</label>
+                    <input type="text" id="op-fecha-hora" readonly>
+                </div>
+            </div>
+
+            <div class="alerta-sms">
+                <input type="checkbox" id="chk-enviar-sms" checked>
+                <label for="chk-enviar-sms">Enviar notificación inmediata por mensaje al celular del Tutor</label>
+            </div>
+
+            <button type="button" class="btn-operacion" onclick="procesarAccesoPuerta()">
+                CONFIRMAR REGISTRO Y ENVIAR AVISO
+            </button>
+
+            <div class="bloque-blanco" style="margin-top: 15px;">
+                <div class="titulo-bloque">HISTORIAL GRABADO EN BASE DE DATOS</div>
+                <div style="overflow-x: auto;">
+                    <table class="tabla-historial" id="tabla-registros">
+                        <thead>
+                            <tr>
+                                <th>Fecha/Hora</th>
+                                <th>Alumno</th>
+                                <th>Movimiento</th>
+                                <th>Estatus SMS</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="modulo-alta" class="seccion-modulo">
+            
+            <div class="bloque-blanco" style="border: 2px solid #e67e22; background-color: #fff9f5;">
+                <div class="grupo-campo" style="margin-bottom: 8px;">
+                    <label style="color:#e67e22; font-weight: bold;">PASO 1: Selecciona a quién le tomarás la foto:</label>
+                    <select id="alta-destino-foto">
+                        <option value="alumno">Foto del Alumno</option>
+                        <option value="tutor">Foto del Tutor Principal</option>
+                        <option value="auth1">Foto de Autorizado 1</option>
+                        <option value="auth2">Foto de Autorizado 2</option>
+                        <option value="auth3">Foto de Autorizado 3</option>
+                    </select>
+                </div>
+                
+                <div class="grupo-botones-foto">
+                    <button type="button" class="btn-capturar" onclick="capturarFotoDesdeCamara()">📸 CAPTURAR FOTO</button>
+                    <button type="button" class="btn-repetir" onclick="descongelarYVolverAVivo()">🔄 REPETIR</button>
+                </div>
+            </div>
+
+            <div class="bloque-blanco">
+                <div class="titulo-bloque">PASO 2: DATOS DEL ALUMNO Y TUTOR</div>
+                <div class="grupo-campo">
+                    <label>Nombre Completo del Alumno:</label>
+                    <input type="text" id="alta-alumno" placeholder="Nombre del estudiante">
+                </div>
+                
+                <div class="linea-doble">
+                    <div class="grupo-campo campo-izq">
+                        <label>Nombre del Tutor Principal:</label>
+                        <input type="text" id="alta-tutor" placeholder="Padre o madre legal">
+                    </div>
+                    <div class="grupo-campo campo-der">
+                        <label>Parentesco:</label>
+                        <select id="alta-tutor-parentesco">
+                            <option value="PADRE">PADRE</option>
+                            <option value="MADRE">MADRE</option>
+                            <option value="TUTOR LEGAL">TUTOR</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grupo-campo">
+                    <label>Número Celular para Avisos (10 dígitos):</label>
+                    <input type="tel" id="alta-celular" placeholder="Ej. 2291234567" maxlength="10">
+                </div>
+            </div>
+
+            <div class="bloque-blanco">
+                <div class="titulo-bloque">PASO 3: LAS 3 PERSONAS AUTORIZADAS Y PARENTESCO</div>
+                
+                <div class="linea-doble">
+                    <div class="grupo-campo campo-izq">
+                        <label>Persona Autorizada 1:</label>
+                        <input type="text" id="alta-auth1" placeholder="Nombre completo">
+                    </div>
+                    <div class="grupo-campo campo-der">
+                        <label>Parentesco:</label>
+                        <input type="text" id="alta-parentesco1" placeholder="Ej. ABUELO">
+                    </div>
+                </div>
+
+                <div class="linea-doble">
+                    <div class="grupo-campo campo-izq">
+                        <label>Persona Autorizada 2:</label>
+                        <input type="text" id="alta-auth2" placeholder="Nombre completo">
+                    </div>
+                    <div class="grupo-campo campo-der">
+                        <label>Parentesco:</label>
+                        <input type="text" id="alta-parentesco2" placeholder="Ej. TIO">
+                    </div>
+                </div>
+
+                <div class="linea-doble">
+                    <div class="grupo-campo campo-izq">
+                        <label>Persona Autorizada 3:</label>
+                        <input type="text" id="alta-auth3" placeholder="Nombre completo">
+                    </div>
+                    <div class="grupo-campo campo-der">
+                        <label>Parentesco:</label>
+                        <input type="text" id="alta-parentesco3" placeholder="Ej. CHOFER">
+                    </div>
+                </div>
+            </div>
+
+            <div class="fila-botones">
+                <button type="button" class="btn-guardar" onclick="guardarNuevoRegistroBD()">GUARDAR BD</button>
+                <button type="button" class="btn-limpiar" onclick="limpiarFormularioAlta()">LIMPIAR</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let BASE_DATOS = JSON.parse(localStorage.getItem('bd_escolar_parentescos')) || [];
+        let HISTORIAL = JSON.parse(localStorage.getItem('historial_escolar_parentescos')) || [];
+        let FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
+
+        function cambiarModulo(modulo) {
+            document.querySelectorAll('.seccion-modulo').forEach(sec => sec.classList.remove('activa'));
+            document.querySelectorAll('.btn-menu').forEach(btn => btn.classList.remove('activa'));
+
+            // Siempre regresar la cámara a modo "en vivo" si cambiamos de pantalla
+            descongelarYVolverAVivo();
+
+            if(modulo === 'operacion') {
+                document.getElementById('modulo-operacion').classList.add('activa');
+                document.getElementById('menu-op').classList.add('activa');
+                actualizarListaDesplegableAlumnos();
+            } else {
+                document.getElementById('modulo-alta').classList.add('activa');
+                document.getElementById('menu-al').classList.add('activa');
+            }
+        }
+
+        // ACCIÓN CRÍTICA: CAPTURAR Y CONGELAR VISUALMENTE LA IMAGEN
+        function capturarFotoDesdeCamara() {
+            const video = document.getElementById('video-dispositivo');
+            const canvas = document.getElementById('canvas-foto');
+            const imgCongelada = document.getElementById('imagen-congelada');
+            const tag = document.getElementById('tag-camara');
+            const destino = document.getElementById('alta-destino-foto').value;
+            const contexto = canvas.getContext('2d');
+
+            if (video.srcObject) {
+                // Sincronizar dimensiones reales del video
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                contexto.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Extraer base64 e inyectar en memoria temporal
+                const fotoBase64 = canvas.toDataURL('image/jpeg');
+                FOTOS_TEMPORALES[destino] = fotoBase64;
+
+                // INTERFAZ INMÓVIL: Ocultar video vivo, mostrar imagen fija capturada
+                imgCongelada.src = fotoBase64;
+                video.style.display = 'none';
+                imgCongelada.style.display = 'block';
+                
+                // Cambiar etiqueta visual a verde
+                tag.textContent = "Foto Congelada";
+                tag.classList.add('fijo');
+
+                alert(`✓ Imagen capturada e inmovilizada para: ${destino.toUpperCase()}.\nSi te gusta cómo se ve, continúa llenando los campos. Si no, dale al botón "REPETIR".`);
+            } else {
+                alert("La señal de video no está lista.");
+            }
+        }
+
+        // LIBERAR VISOR Y VOLVER A VIDEO EN VIVO
+        function descongelarYVolverAVivo() {
+            const video = document.getElementById('video-dispositivo');
+            const imgCongelada = document.getElementById('imagen-congelada');
+            const tag = document.getElementById('tag-camara');
+
+            imgCongelada.style.display = 'none';
+            video.style.display = 'block';
+            
+            tag.textContent = "En Vivo";
+            tag.classList.remove('fijo');
+        }
+
+        function limpiarFormularioAlta() {
+            document.getElementById('alta-alumno').value = '';
+            document.getElementById('alta-tutor').value = '';
+            document.getElementById('alta-celular').value = '';
+            document.getElementById('alta-auth1').value = '';
+            document.getElementById('alta-auth2').value = '';
+            document.getElementById('alta-auth3').value = '';
+            document.getElementById('alta-parentesco1').value = '';
+            document.getElementById('alta-parentesco2').value = '';
+            document.getElementById('alta-parentesco3').value = '';
+            
+            FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
+            descongelarYVolverAVivo();
+            alert("Campos limpios. Módulo de alta listo.");
+        }
+
+        function guardarNuevoRegistroBD() {
+            const alumno = document.getElementById('alta-alumno').value.trim();
+            const tutor = document.getElementById('alta-tutor').value.trim();
+            const tutorParentesco = document.getElementById('alta-tutor-parentesco').value;
+            const celular = document.getElementById('alta-celular').value.trim();
+            
+            const auth1 = document.getElementById('alta-auth1').value.trim();
+            const par1 = document.getElementById('alta-parentesco1').value.trim() || "AUTORIZADO";
+            const auth2 = document.getElementById('alta-auth2').value.trim();
+            const par2 = document.getElementById('alta-parentesco2').value.trim() || "AUTORIZADO";
+            const auth3 = document.getElementById('alta-auth3').value.trim();
+            const par3 = document.getElementById('alta-parentesco3').value.trim() || "AUTORIZADO";
+
+            if (!alumno || !tutor || !celular) {
+                alert("ERROR: Datos obligatorios ausentes.");
+                return;
+            }
+
+            const nuevoRegistro = {
+                id: Date.now(),
+                alumno: alumno,
+                fotoAlumno: FOTOS_TEMPORALES.alumno,
+                tutor: tutor,
+                celular: celular,
+                autorizados: [
+                    { nombre: tutor, parentesco: tutorParentesco, foto: FOTOS_TEMPORALES.tutor },
+                    { nombre: auth1, parentesco: par1.toUpperCase(), foto: FOTOS_TEMPORALES.auth1 },
+                    { nombre: auth2, parentesco: par2.toUpperCase(), foto: FOTOS_TEMPORALES.auth2 },
+                    { nombre: auth3, parentesco: par3.toUpperCase(), foto: FOTOS_TEMPORALES.auth3 }
+                ].filter(p => p.nombre !== "")
+            };
+
+            BASE_DATOS.push(nuevoRegistro);
+            localStorage.setItem('bd_escolar_parentescos', JSON.stringify(BASE_DATOS));
+
+            alert(`Ficha de "${alumno}" consolidada en la Base de Datos.`);
+            limpiarFormularioAlta();
+            cambiarModulo('operacion');
+        }
+
+        function actualizarListaDesplegableAlumnos() {
+            const selectAlumnos = document.getElementById('opciones-alumnos');
+            selectAlumnos.innerHTML = '<option value="">-- Seleccione Alumno --</option>';
+
+            BASE_DATOS.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = item.alumno;
+                selectAlumnos.appendChild(opt);
+            });
+        }
+
+        function cargarDatosAlumnoSeleccionado() {
+            const idSeleccionado = document.getElementById('opciones-alumnos').value;
+            const campoCelular = document.getElementById('op-celular-tutor');
+            const selectQu
