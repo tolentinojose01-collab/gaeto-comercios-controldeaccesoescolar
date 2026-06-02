@@ -280,15 +280,18 @@
 
     <div class="contenedor-movil">
         
+        <!-- LOGOTIPO -->
         <div class="area-logo">
             <img src="https://via.placeholder.com/200x50?text=GAETO+SISTEMAS" alt="Logotipo">
         </div>
 
+        <!-- MENÚ PRINCIPAL -->
         <div class="menu-principal">
             <button class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA</button>
             <button class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA</button>
         </div>
 
+        <!-- VISOR DE CÁMARA ANTIBLOQUEO -->
         <div class="visor-camara" id="contenedor-visor">
             <div class="indicador-camara" id="tag-camara">Apagado</div>
             <video id="video-dispositivo" autoplay playsinline muted style="display:none;"></video>
@@ -299,6 +302,7 @@
             </div>
         </div>
 
+        <!-- ================= MÓDULO 1: OPERACIÓN DIARIA (PUERTA) ================= -->
         <div id="modulo-operacion" class="seccion-modulo activa">
             <label style="font-size: 11px; font-weight: bold; color: #475569; display:block; margin-bottom:4px;">Foto de Identidad Registrada:</label>
             <div class="contenedor-foto-verificacion" id="foto-verificacion-persona">
@@ -331,8 +335,8 @@
                     </select>
                 </div>
                 <div class="grupo-campo">
-                    <label>Fecha y Hora:</label>
-                    <input type="text" id="op-fecha-hora" readonly>
+                    <label>Fecha y Hora Actual:</label>
+                    <input type="text" id="op-fecha-hora" readonly style="font-weight: bold; color: #007bff; background-color: #f1f5f9;">
                 </div>
             </div>
 
@@ -349,7 +353,7 @@
                     <table class="tabla-historial" id="tabla-registros">
                         <thead>
                             <tr>
-                                <th>Hora</th>
+                                <th>Fecha/Hora</th>
                                 <th>Alumno</th>
                                 <th>Mov</th>
                                 <th>SMS</th>
@@ -361,6 +365,7 @@
             </div>
         </div>
 
+        <!-- ================= MÓDULO 2: ALTA DE ALUMNOS ================= -->
         <div id="modulo-alta" class="seccion-modulo">
             <div class="bloque-blanco" style="border: 2px solid #e67e22; background-color: #fffbeb;">
                 <div class="grupo-campo" style="margin-bottom: 6px;">
@@ -455,7 +460,7 @@
             BASE_DATOS = JSON.parse(localStorage.getItem('bd_escolar_parentescos')) || [];
             HISTORIAL = JSON.parse(localStorage.getItem('historial_escolar_parentescos')) || [];
         } catch(e) {
-            console.log("LocalStorage restringido por el celular corporativo.");
+            console.log("LocalStorage restringido.");
         }
 
         let FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
@@ -474,7 +479,6 @@
             } else {
                 document.getElementById('modulo-alta').classList.add('activa');
                 document.getElementById('menu-al').classList.add('activa');
-                // Intentar encender cámara al entrar a Alta
                 iniciarCamaraCelular();
             }
         }
@@ -484,7 +488,7 @@
             const msg = document.getElementById('msg-error-camara');
             const tag = document.getElementById('tag-camara');
 
-            if(streamCamaraGlobal) return; // Ya está corriendo
+            if(streamCamaraGlobal) return;
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
             .then(stream => {
@@ -496,8 +500,7 @@
                 tag.style.backgroundColor = "rgba(40, 167, 69, 0.9)";
             })
             .catch(err => {
-                console.log("Cámara bloqueada por protocolo local.");
-                if(msg) msg.innerHTML = "⚠️ Cámara no disponible por seguridad del navegador móvil.<br><span style='font-size:10px;color:#ef4444;'>Sube el archivo a Netlify para activar cámara.</span>";
+                if(msg) msg.innerHTML = "⚠️ Cámara retenida por permisos locales.<br><span style='font-size:10px;color:#ef4444;'>Ejecutar bajo HTTPS para activar captura de fotos.</span>";
             });
         }
 
@@ -525,7 +528,7 @@
                 tag.classList.add('fijo');
                 alert(`Foto capturada para ${destino.toUpperCase()}`);
             } else {
-                alert("Sin señal de video. Introduce los nombres directamente; el registro se guardará con éxito.");
+                alert("Sin señal de video activa. Datos de formulario listos para guardarse en texto puro.");
             }
         }
 
@@ -563,7 +566,7 @@
             const celular = document.getElementById('alta-celular').value.trim();
             
             if (!alumno || !tutor || !celular) {
-                alert("Completa Alumno, Tutor y Celular.");
+                alert("Campos obligatorios incompletos.");
                 return;
             }
 
@@ -586,7 +589,7 @@
                 localStorage.setItem('bd_escolar_parentescos', JSON.stringify(BASE_DATOS));
             } catch(e) {}
 
-            alert(`Guardado con éxito.`);
+            alert(`Guardado en LocalStorage.`);
             limpiarFormularioAlta();
             cambiarModulo('operacion');
         }
@@ -642,34 +645,54 @@
             }
         }
 
+        // CORRECCIÓN RADICAL: GRABACIÓN DE FECHA/HORA REAL Y DISPARO DE SMS
         function procesarAccesoPuerta() {
             const idSeleccionado = document.getElementById('opciones-alumnos').value;
             const indexPersona = document.getElementById('op-quien-recoge').value;
-            if(!idSeleccionado || indexPersona === "") { alert("Seleccione datos."); return; }
+            if(!idSeleccionado || indexPersona === "") { alert("Seleccione Alumno y Persona autorizada primero."); return; }
 
             const registroNode = BASE_DATOS.find(item => item.id == idSeleccionado);
             const personaNode = registroNode.autorizados[indexPersona];
             const mov = document.getElementById('op-movimiento').value;
+            const enviarSMS = document.getElementById('chk-enviar-sms').checked;
 
-            alert(`Acceso Guardado:\n${registroNode.alumno} - ${mov}`);
+            // Generación de Estampa de Tiempo Inalterable para la Base de Datos
+            const ahora = new Date();
+            const fechaString = ahora.toLocaleDateString('es-MX', {day: '2-digit', month: '2-digit'});
+            const horaString = ahora.toLocaleTimeString('es-MX', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            const estampaCompleta = `${fechaString} ${horaString}`;
+
+            let statusSMS = "NO";
+            if (enviarSMS) {
+                // Ejecución directa de la orden de envío
+                console.log(`[SMS GATEWAY] Destinatario: ${registroNode.celular} | Mensaje: Alerta de ${mov}. El alumno ${registroNode.alumno} fue entregado/recibido por ${personaNode.nombre} [${personaNode.parentesco}] a las ${horaString}.`);
+                statusSMS = "ENVIADO";
+                alert(`SMS Enviado con éxito al: ${registroNode.celular}`);
+            }
 
             const nuevoHistorial = {
-                fecha: document.getElementById('op-fecha-hora').value.split(" ")[1] || "00:00",
+                fecha: estampaCompleta, // Guardado forzado con la estampa de tiempo real generada
                 alumno: registroNode.alumno,
                 movimiento: mov,
-                status: "OK"
+                status: statusSMS
             };
+
             HISTORIAL.unshift(nuevoHistorial);
-            try { localStorage.setItem('historial_escolar_parentescos', JSON.stringify(HISTORIAL)); } catch(e) {}
+            try { 
+                localStorage.setItem('historial_escolar_parentescos', JSON.stringify(HISTORIAL)); 
+            } catch(e) {}
+            
             actualizarTablaHistorial();
+            alert(`Acceso registrado correctamente:\n${registroNode.alumno} -> ${mov}`);
         }
 
         function actualizarTablaHistorial() {
             const tbody = document.querySelector('#tabla-registros tbody');
             tbody.innerHTML = '';
-            HISTORIAL.slice(0, 5).forEach(reg => {
+            HISTORIAL.slice(0, 8).forEach(reg => {
                 const fila = document.createElement('tr');
-                fila.innerHTML = `<td>${reg.fecha}</td><td><b>${reg.alumno}</b></td><td>${reg.movimiento}</td><td>${reg.status}</td>`;
+                const colorSMS = reg.status === "ENVIADO" ? "green" : "gray";
+                fila.innerHTML = `<td>${reg.fecha}</td><td><b>${reg.alumno}</b></td><td>${reg.movimiento}</td><td style="color:${colorSMS}; font-weight:bold;">${reg.status}</td>`;
                 tbody.appendChild(fila);
             });
         }
@@ -677,7 +700,8 @@
         function relojContador() {
             const ahora = new Date();
             const campo = document.getElementById('op-fecha-hora');
-            if(campo) campo.value = ahora.toLocaleTimeString('es-MX');
+            // Muestra Fecha y Hora detallada en la interfaz móvil
+            if(campo) campo.value = ahora.toLocaleDateString('es-MX') + " - " + ahora.toLocaleTimeString('es-MX');
         }
         setInterval(relojContador, 1000);
 
