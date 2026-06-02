@@ -6,25 +6,72 @@
     <title>Sistema de Seguridad Escolar - Gaeto Sistemas</title>
     <style>
         /* CONFIGURACIÓN BLINDADA PARA SMARTPHONE - NO OPTIMIZAR */
+        :root {
+            --bg-principal: #f4f6f9;
+            --bg-contenedor: #ffffff;
+            --bg-bloque: #f8fafc;
+            --borde-bloque: #e2e8f0;
+            --texto-principal: #1e293b;
+            --texto-secundario: #475569;
+            --input-bg: #ffffff;
+            --input-texto: #000000;
+        }
+
+        /* Estilos para el Modo Oscuro (Fondo Negro) */
+        body.modo-oscuro {
+            --bg-principal: #000000;
+            --bg-contenedor: #1a1a1a;
+            --bg-bloque: #262626;
+            --borde-bloque: #404040;
+            --texto-principal: #ffffff;
+            --texto-secundario: #a3a3a3;
+            --input-bg: #333333;
+            --input-texto: #ffffff;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
+            background-color: var(--bg-principal);
             margin: 0;
             padding: 8px;
             display: flex;
             justify-content: center;
             -webkit-user-select: none;
             user-select: none;
+            transition: background-color 0.3s;
         }
 
         .contenedor-movil {
-            background-color: #ffffff;
+            background-color: var(--bg-contenedor);
             width: 100%;
             max-width: 450px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 12px;
             box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Botón de Modo Oscuro */
+        .btn-pantalla-modo {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #343a40;
+            color: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        body.modo-oscuro .btn-pantalla-modo {
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #404040;
         }
 
         .area-logo {
@@ -46,6 +93,7 @@
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
+            margin-top: 10px;
         }
 
         .btn-menu {
@@ -116,7 +164,7 @@
         .contenedor-foto-verificacion {
             width: 100%;
             height: 160px;
-            background-color: #f1f5f9;
+            background-color: var(--bg-bloque);
             border-radius: 8px;
             margin-bottom: 12px;
             display: flex;
@@ -162,20 +210,20 @@
         }
 
         .bloque-blanco {
-            background-color: #f8fafc;
+            background-color: var(--bg-bloque);
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--borde-bloque);
             margin-bottom: 12px;
         }
 
         .titulo-bloque {
             font-size: 13px;
             font-weight: bold;
-            color: #1e293b;
+            color: var(--texto-principal);
             margin-top: 0;
             margin-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--borde-bloque);
             padding-bottom: 4px;
         }
 
@@ -187,7 +235,7 @@
             display: block;
             font-size: 11px;
             font-weight: bold;
-            color: #475569;
+            color: var(--texto-secundario);
             margin-bottom: 3px;
         }
 
@@ -195,10 +243,11 @@
             width: 100%;
             padding: 10px;
             font-size: 14px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--borde-bloque);
             border-radius: 6px;
             box-sizing: border-box;
-            background-color: #ffffff;
+            background-color: var(--input-bg);
+            color: var(--input-texto);
             -webkit-appearance: none;
         }
 
@@ -219,9 +268,14 @@
             border: 1px solid #c8e6c9;
             margin-bottom: 12px;
         }
+        body.modo-oscuro .alerta-sms {
+            background-color: #1b5e20;
+            border: 1px solid #2e7d32;
+        }
 
         .alerta-sms input { width: 16px; height: 16px; margin: 0; }
         .alerta-sms label { font-size: 11.5px; font-weight: bold; color: #1b5e20; }
+        body.modo-oscuro .alerta-sms label { color: #ffffff; }
 
         .fila-botones {
             display: flex;
@@ -251,7 +305,7 @@
         }
 
         .btn-operacion {
-            background-color: #25d366; /* Color Oficial WhatsApp */
+            background-color: #25d366;
             color: #ffffff;
             border: none;
             padding: 15px;
@@ -263,25 +317,42 @@
             text-transform: uppercase;
         }
 
+        .btn-destruir-sistema {
+            background-color: #7f1d1d;
+            color: #ffffff;
+            border: 1px solid #f87171;
+            padding: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
         .tabla-historial {
             width: 100%;
             border-collapse: collapse;
             font-size: 11px;
+            color: var(--texto-principal);
         }
 
         .tabla-historial th, .tabla-historial td {
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--borde-bloque);
             padding: 6px;
             text-align: left;
         }
 
-        .tabla-historial th { background-color: #f1f5f9; }
+        .tabla-historial th { background-color: var(--bg-principal); }
     </style>
 </head>
 <body>
 
     <div class="contenedor-movil">
         
+        <button class="btn-pantalla-modo" onclick="conmutarModoFondoNegoro()">🌓 FONDO</button>
+
         <div class="area-logo">
             <img src="https://via.placeholder.com/200x50?text=GAETO+SISTEMAS" alt="Logotipo">
         </div>
@@ -302,7 +373,7 @@
         </div>
 
         <div id="modulo-operacion" class="seccion-modulo activa">
-            <label style="font-size: 11px; font-weight: bold; color: #475569; display:block; margin-bottom:4px;">Foto de Identidad Registrada:</label>
+            <label style="font-size: 11px; font-weight: bold; color: var(--texto-secundario); display:block; margin-bottom:4px;">Foto de Identidad Registrada:</label>
             <div class="contenedor-foto-verificacion" id="foto-verificacion-persona">
                 <span style="color:#94a3b8; font-size:11px; padding:10px; text-align:center;">Seleccione alumno y parentesco para validar rostro</span>
             </div>
@@ -334,7 +405,7 @@
                 </div>
                 <div class="grupo-campo">
                     <label>Fecha y Hora Actual:</label>
-                    <input type="text" id="op-fecha-hora" readonly style="font-weight: bold; color: #007bff; background-color: #f1f5f9;">
+                    <input type="text" id="op-fecha-hora" readonly style="font-weight: bold; color: #007bff; background-color: var(--bg-principal);">
                 </div>
             </div>
 
@@ -361,6 +432,8 @@
                     </table>
                 </div>
             </div>
+
+            <button type="button" class="btn-destruir-sistema" onclick="limpiarSistemaCompletoBD()">⚠️ LIMPIAR TODO EL SISTEMA</button>
         </div>
 
         <div id="modulo-alta" class="seccion-modulo">
@@ -455,12 +528,43 @@
         try {
             BASE_DATOS = JSON.parse(localStorage.getItem('bd_escolar_parentescos')) || [];
             HISTORIAL = JSON.parse(localStorage.getItem('historial_escolar_parentescos')) || [];
+            
+            // Cargar preferencia de modo oscuro guardada
+            if(localStorage.getItem('modo_negro_activo') === 'true') {
+                document.body.classList.add('modo-oscuro');
+            }
         } catch(e) {
             console.log("LocalStorage inaccesible.");
         }
 
         let FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
         let streamCamaraGlobal = null;
+
+        // FUNCIÓN MODO OSCURO (FONDO NEGRO)
+        function conmutarModoFondoNegoro() {
+            const activo = document.body.classList.toggle('modo-oscuro');
+            try {
+                localStorage.setItem('modo_negro_activo', activo);
+            } catch(e) {}
+        }
+
+        // FUNCIÓN LIMPIAR SISTEMA COMPLETO
+        function limpiarSistemaCompletoBD() {
+            const confirmacion1 = confirm("⚠️ ¿ESTÁS SEGURO?\nEsta acción eliminará de forma PERMANENTE a todos los alumnos guardados y todo el historial.");
+            if (confirmacion1) {
+                const confirmacion2 = confirm("❌ ¿Confirmación final? No podrás recuperar la información.");
+                if (confirmacion2) {
+                    try {
+                        localStorage.removeItem('bd_escolar_parentescos');
+                        localStorage.removeItem('historial_escolar_parentescos');
+                        alert("Sistema restablecido con éxito a cero.");
+                        window.location.reload();
+                    } catch(e) {
+                        alert("Error al intentar limpiar LocalStorage.");
+                    }
+                }
+            }
+        }
 
         function cambiarModulo(modulo) {
             document.querySelectorAll('.seccion-modulo').forEach(sec => sec.classList.remove('activa'));
@@ -656,7 +760,6 @@
             }
         }
 
-        // CONTROL INTEGRAL Y REDIRECCIÓN DIRECTA A WHATSAPP
         function procesarAccesoPuerta() {
             const idSeleccionado = document.getElementById('opciones-alumnos').value;
             const indexPersona = document.getElementById('op-quien-recoge').value;
@@ -677,23 +780,18 @@
             if (enviarSMS && registroNode.celular) {
                 statusEnvio = "WHA";
                 
-                // Formateo estricto del mensaje de texto para WhatsApp
                 const saludo = `*AVISO DE SEGURIDAD ESCOLAR*%0A%0A`;
                 const cuerpo = `Estimado Tutor, se le notifica que el alumno *${registroNode.alumno}* registró un movimiento de *${mov}* del plantel escolar.%0A%0A`;
                 const detalles = `📅 *Fecha:* ${fechaString}%0A⏰ *Hora:* ${horaString}%0A👤 *Se presentó:* ${personaNode.nombre} [${personaNode.parentesco}].`;
                 
                 const mensajeCompleto = saludo + cuerpo + detalles;
                 
-                // Limpiar caracteres del número telefónico de México (Prefijo internacional obligatorio 52)
                 let numeroLimpio = registroNode.celular.replace(/\D/g, '');
                 if (numeroLimpio.length === 10) {
                     numeroLimpio = "52" + numeroLimpio;
                 }
 
-                // Disparador de enlace nativo universal de WhatsApp
                 const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${mensajeCompleto}`;
-                
-                // Abre de inmediato el WhatsApp del celular
                 window.open(urlWhatsApp, '_blank');
             }
 
