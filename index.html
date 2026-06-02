@@ -17,6 +17,7 @@
             --input-texto: #000000;
         }
 
+        /* Estilos para el Modo Oscuro (Fondo Negro) */
         body.modo-oscuro {
             --bg-principal: #000000;
             --bg-contenedor: #1a1a1a;
@@ -37,6 +38,7 @@
             justify-content: center;
             -webkit-user-select: none;
             user-select: none;
+            transition: background-color 0.3s;
         }
 
         .contenedor-movil {
@@ -50,6 +52,7 @@
             position: relative;
         }
 
+        /* Botón de Modo Oscuro */
         .btn-pantalla-modo {
             position: absolute;
             top: 12px;
@@ -152,6 +155,10 @@
             font-weight: bold;
             text-transform: uppercase;
             z-index: 10;
+        }
+
+        .indicador-camara.fijo {
+            background-color: rgba(40, 167, 69, 0.95);
         }
 
         .contenedor-foto-verificacion {
@@ -344,15 +351,15 @@
 
     <div class="contenedor-movil">
         
-        <button type="button" class="btn-pantalla-modo" onclick="conmutarModoFondoNegoro()">🌓 FONDO</button>
+        <button class="btn-pantalla-modo" onclick="conmutarModoFondoNegoro()">🌓 FONDO</button>
 
         <div class="area-logo">
             <img src="https://via.placeholder.com/200x50?text=GAETO+SISTEMAS" alt="Logotipo">
         </div>
 
         <div class="menu-principal">
-            <button type="button" class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA</button>
-            <button type="button" class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA</button>
+            <button class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA</button>
+            <button class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA</button>
         </div>
 
         <div class="visor-camara" id="contenedor-visor">
@@ -417,7 +424,6 @@
                             <tr>
                                 <th>Fecha/Hora</th>
                                 <th>Alumno</th>
-                                <th>Quién Recoge / Registra</th>
                                 <th>Mov</th>
                                 <th>Envío</th>
                             </tr>
@@ -517,37 +523,40 @@
     </div>
 
     <script>
-        // BLINDAJE ABSOLUTO DE INICIALIZACIÓN
         let BASE_DATOS = [];
         let HISTORIAL = [];
-        
         try {
-            const bdLocal = localStorage.getItem('bd_escolar_parentescos');
-            if (bdLocal) BASE_DATOS = JSON.parse(bdLocal);
-        } catch(e) { console.log("Error BD"); }
-
-        try {
-            const histLocal = localStorage.getItem('historial_escolar_parentescos');
-            if (histLocal) HISTORIAL = JSON.parse(histLocal);
-        } catch(e) { console.log("Error Historial"); }
+            BASE_DATOS = JSON.parse(localStorage.getItem('bd_escolar_parentescos')) || [];
+            HISTORIAL = JSON.parse(localStorage.getItem('historial_escolar_parentescos')) || [];
+            
+            // Cargar preferencia de modo oscuro guardada
+            if(localStorage.getItem('modo_negro_activo') === 'true') {
+                document.body.classList.add('modo-oscuro');
+            }
+        } catch(e) {
+            console.log("LocalStorage inaccesible.");
+        }
 
         let FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
         let streamCamaraGlobal = null;
 
+        // FUNCIÓN MODO OSCURO (FONDO NEGRO)
         function conmutarModoFondoNegoro() {
             const activo = document.body.classList.toggle('modo-oscuro');
             try {
-                localStorage.setItem('modo_negro_activo', activo ? 'true' : 'false');
+                localStorage.setItem('modo_negro_activo', activo);
             } catch(e) {}
         }
 
+        // FUNCIÓN LIMPIAR SISTEMA COMPLETO
         function limpiarSistemaCompletoBD() {
             const confirmacion1 = confirm("⚠️ ¿ESTÁS SEGURO?\nEsta acción eliminará de forma PERMANENTE a todos los alumnos guardados y todo el historial.");
             if (confirmacion1) {
                 const confirmacion2 = confirm("❌ ¿Confirmación final? No podrás recuperar la información.");
                 if (confirmacion2) {
                     try {
-                        localStorage.clear();
+                        localStorage.removeItem('bd_escolar_parentescos');
+                        localStorage.removeItem('historial_escolar_parentescos');
                         alert("Sistema restablecido con éxito a cero.");
                         window.location.reload();
                     } catch(e) {
@@ -582,23 +591,19 @@
 
             if(streamCamaraGlobal) return;
 
-            if (imgCongelada) imgCongelada.style.display = 'none';
+            imgCongelada.style.display = 'none';
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
             .then(stream => {
                 streamCamaraGlobal = stream;
-                if (video) {
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                }
+                video.srcObject = stream;
+                video.style.display = 'block';
                 if(msg) msg.style.display = 'none';
-                if (tag) {
-                    tag.textContent = "En Vivo";
-                    tag.style.backgroundColor = "rgba(40, 167, 69, 0.9)";
-                }
+                tag.textContent = "En Vivo";
+                tag.style.backgroundColor = "rgba(40, 167, 69, 0.9)";
             })
             .catch(err => {
-                if(msg) msg.innerHTML = "⚠️ Cámara no disponible sin protocolo seguro HTTPS o permisos.";
+                if(msg) msg.innerHTML = "⚠️ Cámara no disponible sin protocolo seguro HTTPS.";
             });
         }
 
@@ -615,10 +620,9 @@
                 video.srcObject = null;
                 video.style.display = 'none';
             }
-            if (tag) {
-                tag.textContent = "Apagado";
-                tag.style.backgroundColor = "rgba(220, 53, 69, 0.9)";
-            }
+            
+            tag.textContent = "Apagado";
+            tag.style.backgroundColor = "rgba(220, 53, 69, 0.9)";
             if(msg) msg.style.display = 'block';
         }
 
@@ -628,9 +632,9 @@
             const imgCongelada = document.getElementById('imagen-congelada');
             const tag = document.getElementById('tag-camara');
             const destino = document.getElementById('alta-destino-foto').value;
+            const contexto = canvas.getContext('2d');
 
-            if (streamCamaraGlobal && video && video.videoWidth > 0) {
-                const contexto = canvas.getContext('2d');
+            if (streamCamaraGlobal && video.videoWidth > 0) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 contexto.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -643,10 +647,8 @@
                 imgCongelada.style.display = 'block';
                 if(document.getElementById('msg-error-camara')) document.getElementById('msg-error-camara').style.display = 'none';
                 
-                if (tag) {
-                    tag.textContent = "Foto Fija";
-                    tag.style.backgroundColor = "#e67e22";
-                }
+                tag.textContent = "Foto Fija";
+                tag.style.backgroundColor = "#e67e22";
                 alert(`Foto fijada en memoria para: ${destino.toUpperCase()}`);
             } else {
                 alert("La cámara no está activa.");
@@ -709,7 +711,6 @@
 
         function actualizarListaDesplegableAlumnos() {
             const selectAlumnos = document.getElementById('opciones-alumnos');
-            if(!selectAlumnos) return;
             selectAlumnos.innerHTML = '<option value="">-- Seleccione Alumno --</option>';
             BASE_DATOS.forEach(item => {
                 const opt = document.createElement('option');
@@ -723,14 +724,13 @@
             const idSeleccionado = document.getElementById('opciones-alumnos').value;
             const campoCelular = document.getElementById('op-celular-tutor');
             const selectQuien = document.getElementById('op-quien-recoge');
-            if(!selectQuien) return;
             selectQuien.innerHTML = '<option value="">-- Seleccione Persona --</option>';
 
-            if(!idSeleccionado) { if(campoCelular) campoCelular.value = ''; return; }
+            if(!idSeleccionado) { campoCelular.value = ''; return; }
 
             const registroNode = BASE_DATOS.find(item => item.id == idSeleccionado);
             if(registroNode) {
-                if(campoCelular) campoCelular.value = registroNode.celular;
+                campoCelular.value = registroNode.celular;
                 registroNode.autorizados.forEach((persona, index) => {
                     const opt = document.createElement('option');
                     opt.value = index;
@@ -745,8 +745,8 @@
             const indexPersona = document.getElementById('op-quien-recoge').value;
             const contenedorFoto = document.getElementById('foto-verificacion-persona');
 
-            if(!idSeleccionado || indexPersona === "" || !contenedorFoto) {
-                if(contenedorFoto) contenedorFoto.innerHTML = '<span style="color:#94a3b8; font-size:11px;">Seleccione persona</span>';
+            if(!idSeleccionado || indexPersona === "") {
+                contenedorFoto.innerHTML = '<span style="color:#94a3b8; font-size:11px;">Seleccione persona</span>';
                 return;
             }
 
@@ -788,4 +788,51 @@
                 
                 let numeroLimpio = registroNode.celular.replace(/\D/g, '');
                 if (numeroLimpio.length === 10) {
-                    numeroLimpio = "
+                    numeroLimpio = "52" + numeroLimpio;
+                }
+
+                const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${mensajeCompleto}`;
+                window.open(urlWhatsApp, '_blank');
+            }
+
+            const nuevoHistorial = {
+                fecha: estampaCompleta,
+                alumno: registroNode.alumno,
+                movimiento: mov,
+                status: statusEnvio
+            };
+
+            HISTORIAL.unshift(nuevoHistorial);
+            try { 
+                localStorage.setItem('historial_escolar_parentescos', JSON.stringify(HISTORIAL)); 
+            } catch(e) {}
+            
+            actualizarTablaHistorial();
+        }
+
+        function actualizarTablaHistorial() {
+            const tbody = document.querySelector('#tabla-registros tbody');
+            tbody.innerHTML = '';
+            HISTORIAL.slice(0, 8).forEach(reg => {
+                const fila = document.createElement('tr');
+                const badgeColor = reg.status === "WHA" ? "#25d366" : "gray";
+                fila.innerHTML = `<td>${reg.fecha}</td><td><b>${reg.alumno}</b></td><td>${reg.movimiento}</td><td style="color:${badgeColor}; font-weight:bold;">${reg.status}</td>`;
+                tbody.appendChild(fila);
+            });
+        }
+
+        function relojContador() {
+            const ahora = new Date();
+            const campo = document.getElementById('op-fecha-hora');
+            if(campo) campo.value = ahora.toLocaleDateString('es-MX') + " - " + ahora.toLocaleTimeString('es-MX');
+        }
+        setInterval(relojContador, 1000);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            relojContador();
+            actualizarListaDesplegableAlumnos();
+            actualizarTablaHistorial();
+        });
+    </script>
+</body>
+</html>
