@@ -17,7 +17,6 @@
             --input-texto: #000000;
         }
 
-        /* Estilos para el Modo Oscuro (Fondo Negro) */
         body.modo-oscuro {
             --bg-principal: #000000;
             --bg-contenedor: #1a1a1a;
@@ -38,7 +37,6 @@
             justify-content: center;
             -webkit-user-select: none;
             user-select: none;
-            transition: background-color 0.3s;
         }
 
         .contenedor-movil {
@@ -52,7 +50,6 @@
             position: relative;
         }
 
-        /* Botón de Modo Oscuro */
         .btn-pantalla-modo {
             position: absolute;
             top: 12px;
@@ -155,10 +152,6 @@
             font-weight: bold;
             text-transform: uppercase;
             z-index: 10;
-        }
-
-        .indicador-camara.fijo {
-            background-color: rgba(40, 167, 69, 0.95);
         }
 
         .contenedor-foto-verificacion {
@@ -351,15 +344,15 @@
 
     <div class="contenedor-movil">
         
-        <button class="btn-pantalla-modo" onclick="conmutarModoFondoNegoro()">🌓 FONDO</button>
+        <button type="button" class="btn-pantalla-modo" onclick="conmutarModoFondoNegoro()">🌓 FONDO</button>
 
         <div class="area-logo">
             <img src="https://via.placeholder.com/200x50?text=GAETO+SISTEMAS" alt="Logotipo">
         </div>
 
         <div class="menu-principal">
-            <button class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA</button>
-            <button class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA</button>
+            <button type="button" class="btn-menu activo" id="menu-op" onclick="cambiarModulo('operacion')">🚪 PUERTA</button>
+            <button type="button" class="btn-menu" id="menu-al" onclick="cambiarModulo('alta')">📝 ALTA</button>
         </div>
 
         <div class="visor-camara" id="contenedor-visor">
@@ -424,6 +417,7 @@
                             <tr>
                                 <th>Fecha/Hora</th>
                                 <th>Alumno</th>
+                                <th>Quién Recoge / Registra</th>
                                 <th>Mov</th>
                                 <th>Envío</th>
                             </tr>
@@ -523,40 +517,53 @@
     </div>
 
     <script>
+        // BYPASS ANTIBLOQUEO CRÍTICO - AISLAMIENTO PREVENTIVO TOTAL
         let BASE_DATOS = [];
         let HISTORIAL = [];
-        try {
-            BASE_DATOS = JSON.parse(localStorage.getItem('bd_escolar_parentescos')) || [];
-            HISTORIAL = JSON.parse(localStorage.getItem('historial_escolar_parentescos')) || [];
-            
-            // Cargar preferencia de modo oscuro guardada
-            if(localStorage.getItem('modo_negro_activo') === 'true') {
-                document.body.classList.add('modo-oscuro');
+        
+        // Ejecución inmediata controlada para limpiar cualquier rastro roto del pasado
+        (function comprobarYLimpiarMemoriaInvasiva() {
+            try {
+                const testBD = localStorage.getItem('bd_escolar_parentescos');
+                if (testBD && (testBD === "null" || testBD === "undefined" || testBD.trim() === "")) {
+                    localStorage.removeItem('bd_escolar_parentescos');
+                } else if (testBD) {
+                    BASE_DATOS = JSON.parse(testBD);
+                }
+            } catch(err) {
+                console.log("Reiniciando contenedor base por error de parseo.");
+                BASE_DATOS = [];
             }
-        } catch(e) {
-            console.log("LocalStorage inaccesible.");
-        }
+
+            try {
+                const testHist = localStorage.getItem('historial_escolar_parentescos');
+                if (testHist && (testHist === "null" || testHist === "undefined" || testHist.trim() === "")) {
+                    localStorage.removeItem('historial_escolar_parentescos');
+                } else if (testHist) {
+                    HISTORIAL = JSON.parse(testHist);
+                }
+            } catch(err) {
+                HISTORIAL = [];
+            }
+        })();
 
         let FOTOS_TEMPORALES = { alumno: "", tutor: "", auth1: "", auth2: "", auth3: "" };
         let streamCamaraGlobal = null;
 
-        // FUNCIÓN MODO OSCURO (FONDO NEGRO)
         function conmutarModoFondoNegoro() {
             const activo = document.body.classList.toggle('modo-oscuro');
             try {
-                localStorage.setItem('modo_negro_activo', activo);
+                localStorage.setItem('modo_negro_activo', activo ? 'true' : 'false');
             } catch(e) {}
         }
 
-        // FUNCIÓN LIMPIAR SISTEMA COMPLETO
         function limpiarSistemaCompletoBD() {
             const confirmacion1 = confirm("⚠️ ¿ESTÁS SEGURO?\nEsta acción eliminará de forma PERMANENTE a todos los alumnos guardados y todo el historial.");
             if (confirmacion1) {
                 const confirmacion2 = confirm("❌ ¿Confirmación final? No podrás recuperar la información.");
                 if (confirmacion2) {
                     try {
-                        localStorage.removeItem('bd_escolar_parentescos');
-                        localStorage.removeItem('historial_escolar_parentescos');
+                        localStorage.clear();
                         alert("Sistema restablecido con éxito a cero.");
                         window.location.reload();
                     } catch(e) {
@@ -590,20 +597,23 @@
             const imgCongelada = document.getElementById('imagen-congelada');
 
             if(streamCamaraGlobal) return;
-
-            imgCongelada.style.display = 'none';
+            if (imgCongelada) imgCongelada.style.display = 'none';
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
             .then(stream => {
                 streamCamaraGlobal = stream;
-                video.srcObject = stream;
-                video.style.display = 'block';
+                if (video) {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                }
                 if(msg) msg.style.display = 'none';
-                tag.textContent = "En Vivo";
-                tag.style.backgroundColor = "rgba(40, 167, 69, 0.9)";
+                if (tag) {
+                    tag.textContent = "En Vivo";
+                    tag.style.backgroundColor = "rgba(40, 167, 69, 0.9)";
+                }
             })
             .catch(err => {
-                if(msg) msg.innerHTML = "⚠️ Cámara no disponible sin protocolo seguro HTTPS.";
+                if(msg) msg.innerHTML = "⚠️ Cámara no disponible sin protocolo seguro HTTPS o permisos.";
             });
         }
 
@@ -620,9 +630,10 @@
                 video.srcObject = null;
                 video.style.display = 'none';
             }
-            
-            tag.textContent = "Apagado";
-            tag.style.backgroundColor = "rgba(220, 53, 69, 0.9)";
+            if (tag) {
+                tag.textContent = "Apagado";
+                tag.style.backgroundColor = "rgba(220, 53, 69, 0.9)";
+            }
             if(msg) msg.style.display = 'block';
         }
 
@@ -632,9 +643,9 @@
             const imgCongelada = document.getElementById('imagen-congelada');
             const tag = document.getElementById('tag-camara');
             const destino = document.getElementById('alta-destino-foto').value;
-            const contexto = canvas.getContext('2d');
 
-            if (streamCamaraGlobal && video.videoWidth > 0) {
+            if (streamCamaraGlobal && video && video.videoWidth > 0) {
+                const contexto = canvas.getContext('2d');
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 contexto.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -647,8 +658,10 @@
                 imgCongelada.style.display = 'block';
                 if(document.getElementById('msg-error-camara')) document.getElementById('msg-error-camara').style.display = 'none';
                 
-                tag.textContent = "Foto Fija";
-                tag.style.backgroundColor = "#e67e22";
+                if (tag) {
+                    tag.textContent = "Foto Fija";
+                    tag.style.backgroundColor = "#e67e22";
+                }
                 alert(`Foto fijada en memoria para: ${destino.toUpperCase()}`);
             } else {
                 alert("La cámara no está activa.");
@@ -711,6 +724,7 @@
 
         function actualizarListaDesplegableAlumnos() {
             const selectAlumnos = document.getElementById('opciones-alumnos');
+            if(!selectAlumnos) return;
             selectAlumnos.innerHTML = '<option value="">-- Seleccione Alumno --</option>';
             BASE_DATOS.forEach(item => {
                 const opt = document.createElement('option');
@@ -724,13 +738,14 @@
             const idSeleccionado = document.getElementById('opciones-alumnos').value;
             const campoCelular = document.getElementById('op-celular-tutor');
             const selectQuien = document.getElementById('op-quien-recoge');
+            if(!selectQuien) return;
             selectQuien.innerHTML = '<option value="">-- Seleccione Persona --</option>';
 
-            if(!idSeleccionado) { campoCelular.value = ''; return; }
+            if(!idSeleccionado) { if(campoCelular) campoCelular.value = ''; return; }
 
             const registroNode = BASE_DATOS.find(item => item.id == idSeleccionado);
             if(registroNode) {
-                campoCelular.value = registroNode.celular;
+                if(campoCelular) campoCelular.value = registroNode.celular;
                 registroNode.autorizados.forEach((persona, index) => {
                     const opt = document.createElement('option');
                     opt.value = index;
@@ -745,8 +760,8 @@
             const indexPersona = document.getElementById('op-quien-recoge').value;
             const contenedorFoto = document.getElementById('foto-verificacion-persona');
 
-            if(!idSeleccionado || indexPersona === "") {
-                contenedorFoto.innerHTML = '<span style="color:#94a3b8; font-size:11px;">Seleccione persona</span>';
+            if(!idSeleccionado || indexPersona === "" || !contenedorFoto) {
+                if(contenedorFoto) contenedorFoto.innerHTML = '<span style="color:#94a3b8; font-size:11px;">Seleccione persona</span>';
                 return;
             }
 
@@ -798,6 +813,7 @@
             const nuevoHistorial = {
                 fecha: estampaCompleta,
                 alumno: registroNode.alumno,
+                quien: `${personaNode.nombre} [${personaNode.parentesco}]`,
                 movimiento: mov,
                 status: statusEnvio
             };
@@ -812,13 +828,16 @@
 
         function actualizarTablaHistorial() {
             const tbody = document.querySelector('#tabla-registros tbody');
+            if(!tbody) return;
             tbody.innerHTML = '';
-            HISTORIAL.slice(0, 8).forEach(reg => {
-                const fila = document.createElement('tr');
-                const badgeColor = reg.status === "WHA" ? "#25d366" : "gray";
-                fila.innerHTML = `<td>${reg.fecha}</td><td><b>${reg.alumno}</b></td><td>${reg.movimiento}</td><td style="color:${badgeColor}; font-weight:bold;">${reg.status}</td>`;
-                tbody.appendChild(fila);
-            });
+            if(Array.isArray(HISTORIAL)) {
+                HISTORIAL.slice(0, 8).forEach(reg => {
+                    const fila = document.createElement('tr');
+                    const badgeColor = reg.status === "WHA" ? "#25d366" : "gray";
+                    fila.innerHTML = `<td>${reg.fecha}</td><td><b>${reg.alumno}</b></td><td>${reg.quien || 'No especificado'}</td><td>${reg.movimiento}</td><td style="color:${badgeColor}; font-weight:bold;">${reg.status}</td>`;
+                    tbody.appendChild(fila);
+                });
+            }
         }
 
         function relojContador() {
@@ -829,6 +848,12 @@
         setInterval(relojContador, 1000);
 
         window.addEventListener('DOMContentLoaded', () => {
+            try {
+                if(localStorage.getItem('modo_negro_activo') === 'true') {
+                    document.body.classList.add('modo-oscuro');
+                }
+            } catch(e) {}
+            
             relojContador();
             actualizarListaDesplegableAlumnos();
             actualizarTablaHistorial();
